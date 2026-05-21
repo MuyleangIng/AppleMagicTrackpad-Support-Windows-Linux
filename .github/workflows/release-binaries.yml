@@ -1,0 +1,91 @@
+name: Build Rust Tool Artifacts
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  windows-tools:
+    name: Windows EXE tools
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Windows tools
+        run: |
+          cargo build --release -p mt2-win-ui -p mt2-control
+
+      - name: Package Windows tools
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist\windows
+          Copy-Item target\release\mt2-win-ui.exe dist\windows\MagicTrackpadRs.exe
+          Copy-Item target\release\mt2-control.exe dist\windows\mt2-control.exe
+          Copy-Item README.md, INSTALL.md, NOTICE.md, LICENSE dist\windows\
+          Compress-Archive -Path dist\windows\* -DestinationPath dist\MagicTrackpadRs-windows-tools.zip
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MagicTrackpadRs-windows-tools
+          path: dist/MagicTrackpadRs-windows-tools.zip
+
+  macos-tools:
+    name: macOS desktop UI
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build macOS UI
+        run: |
+          cargo build --release -p mt2-mac-ui
+
+      - name: Package macOS UI
+        run: |
+          mkdir -p dist/macos
+          cp target/release/mt2-mac-ui dist/macos/MagicTrackpadRs-mac
+          cp run-mac-ui.sh README.md INSTALL.md NOTICE.md LICENSE dist/macos/
+          tar -czf dist/MagicTrackpadRs-macos.tar.gz -C dist/macos .
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MagicTrackpadRs-macos
+          path: dist/MagicTrackpadRs-macos.tar.gz
+
+  linux-helper:
+    name: Linux helper bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build portable Rust libraries and CLI help tool
+        run: |
+          cargo build --release -p mt2-core -p mt2-settings -p mt2-control
+
+      - name: Package Linux helper
+        run: |
+          mkdir -p dist/linux
+          cp target/release/mt2-control dist/linux/mt2-control
+          cp install.sh README.md INSTALL.md NOTICE.md LICENSE dist/linux/
+          tar -czf dist/MagicTrackpadRs-linux-helper.tar.gz -C dist/linux .
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MagicTrackpadRs-linux-helper
+          path: dist/MagicTrackpadRs-linux-helper.tar.gz

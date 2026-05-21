@@ -2,6 +2,16 @@
 
 ## Quick Answer
 
+For Rust UI/tool downloads, use the GitHub Actions artifact workflow:
+
+1. Open the repo on GitHub.
+2. Go to **Actions**.
+3. Run **Build Rust Tool Artifacts**.
+4. Download the artifact for your OS:
+   - `MagicTrackpadRs-windows-tools`
+   - `MagicTrackpadRs-macos`
+   - `MagicTrackpadRs-linux-helper`
+
 For Windows 11, use a complete release zip, open PowerShell as Administrator,
 and run:
 

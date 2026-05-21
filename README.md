@@ -1,78 +1,82 @@
 # Magic-Tranpad-mac-OS-win-linux
 
-Rust-first tools and Windows driver package for Apple Magic Trackpad devices across Windows, macOS, and future Linux support.
+Rust-first Apple Magic Trackpad tools for macOS, Windows, and future Linux support.
 
-The current Windows driver code is based on the excellent [imbushuo](https://github.com/imbushuo/mac-precision-touchpad) Magic Trackpad driver and supports Bluetooth. Compared to imbushuo or to the official 2021 Apple driver, this project adds:
+This repository is being rebuilt around Rust. The Rust parts are the shared parser,
+settings backend, Windows desktop UI, Windows CLI, and macOS desktop status UI.
+The Windows driver package is still C KMDF/UMDF code while the driver logic is
+ported in safe stages.
 
-- support for USB-C Magic Trackpad 2
-- battery level reading
-- haptic feedback control
-- various options for controlling pointer precision
-- Rust desktop and command-line tools for settings.
+## What This Is
 
-The previous version of this project used a hack to install itself in the DriverStore and couldn't support Bluetooth. At the beginning of this year, I decided to purchase an EV certificate to properly sign the driver: I paid 485 euros for it, including taxes that I have no way of recovering as an individual (btw, only organizations can request an EV certificate). I was tired of seeing people resorting to the wildest hacks to get the MT2 to work via Bluetooth 😀 (you can get a glimpse of this in the issues of this repo). **Windows drivers signing requirements and costs are unfair to open-source developers**.
+- A Windows Precision Touchpad driver package for Apple Magic Trackpad devices.
+- Rust desktop and CLI tools for settings/status.
+- A Rust migration workspace for moving reusable driver logic out of C.
+- A future base for Linux HID/input support.
 
-## Current status
+## Important License Notice
 
-| Platform | Architecture | Driver support | UI support | Install path |
+The current Windows driver code is derived from previous GPL driver work,
+including the `imbushuo/mac-precision-touchpad` lineage. Because that driver
+code remains in this repository, the GPL license and attribution must stay.
+
+See [NOTICE.md](NOTICE.md) for attribution and status.
+
+## Current Support
+
+| Platform | Architecture | Driver | UI/tooling | Status |
 |---|---:|---|---|---|
-| Windows 11 | AMD64 / x64 | Supported | Rust CLI and Rust desktop UI | `install.ps1` or right-click INF |
-| Windows 11 | ARM64 | Package/build path exists | Rust CLI and Rust desktop UI | `install.ps1` or right-click INF |
-| Windows 10 | AMD64 / x64 | Supported through workaround/package path | Rust CLI and Rust desktop UI | `build\make_win10.bat` package or `install.ps1` with a complete package |
-| Windows 10 | ARM64 | Not supported | Not supported | No supported install |
-| macOS | Apple Silicon / Intel | Uses Apple's built-in driver | Rust desktop status UI | `./run-mac-ui.sh` |
-| Linux | AMD64 / ARM64 | Not supported yet | Not supported yet | `install.sh` detects Linux and stops safely |
+| Windows 11 | AMD64 / x64 | Supported driver package | Rust desktop UI + Rust CLI | Main target |
+| Windows 11 | ARM64 | Build/package path exists | Rust desktop UI + Rust CLI | Needs real-device testing |
+| Windows 10 | AMD64 / x64 | Workaround/package path | Rust desktop UI + Rust CLI | Partial support |
+| Windows 10 | ARM64 | Not supported | Not supported | Not planned yet |
+| macOS | Apple Silicon / Intel | Uses Apple's built-in driver | Rust desktop status UI | Supported helper UI |
+| Linux | AMD64 / ARM64 | Not implemented yet | Not implemented yet | Future Rust HID/input work |
 
-## Features
+## Current Features
 
-### Windows driver features
+### Windows Driver Package
 
 - Magic Trackpad 2 Bluetooth support.
 - Magic Trackpad 2 USB and USB-C support.
-- Windows Precision Touchpad reporting.
-- Battery level query for Bluetooth devices.
-- Haptic feedback presets.
-- Pointer precision options.
+- Windows Precision Touchpad reports.
+- Bluetooth battery query.
+- Haptic feedback settings.
+- Pointer precision settings.
 - Near-finger, button-finger, and palm-rejection options.
 
-### Rust tools
+### Rust Workspace
 
-- `mt2-core`: Magic Trackpad 2 report parsing logic.
-- `mt2-settings`: shared Rust settings backend.
-- `mt2-control`: Windows command-line settings utility.
-- `mt2-win-ui`: native Windows desktop UI for settings presets.
-- `mt2-mac-ui`: native macOS desktop UI for trackpad status.
+- `mt2-core`: Magic Trackpad 2 report parser with tests.
+- `mt2-settings`: shared Rust settings and preset backend.
+- `mt2-control`: Windows CLI settings utility.
+- `mt2-win-ui`: native Windows desktop settings UI through Win32.
+- `mt2-mac-ui`: native macOS desktop status UI through AppKit.
 
-The Windows driver itself is still the existing C KMDF/UMDF implementation. The Rust port is in progress and currently covers parser, settings, and UI/tooling pieces.
-
-## Easy install
+## Install
 
 ### Windows 11
 
-0) Uninstall any previous versions of this driver, imbushuo or `official 2021 Apple driver`. Personally I use [DriverStore Explorer](https://github.com/lostindark/DriverStoreExplorer) for that, alternatively you can use Windows Device Manager. Also, **it's especially important to uninstall `Magic Utilities` and `Trackpad++`** before continuing with the installation!
-
-1) Download the zip file of this project from this repo's Releases page and unzip it.
-
-2) Select your architecture: AMD64 or ARM64. Right-click on the INF file and click "Install".
-
-Or open PowerShell as Administrator from the unzipped release folder and run:
+Use a complete release package, open PowerShell as Administrator, then run:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\install.ps1
 ```
 
-The script detects AMD64/ARM64 and installs the matching driver package. See [INSTALL.md](INSTALL.md) for details.
+The installer detects AMD64/x64 or ARM64 and installs the matching INF package.
+Manual install is also possible by right-clicking `AmtPtpDevice.inf` inside the
+matching architecture folder.
 
 ### Windows 10
 
-Windows 10 AMD64 uses the Windows 10 package flow documented in [INSTALL.md](INSTALL.md).
-
-Windows 10 ARM64 is not supported.
+Windows 10 AMD64 uses the Windows 10 package flow documented in
+[INSTALL.md](INSTALL.md). Windows 10 ARM64 is not supported.
 
 ### macOS
 
-macOS already includes native Magic Trackpad support. This repo does not install a macOS driver. To run the Rust macOS status UI:
+macOS already has a built-in Magic Trackpad driver. This repo does not install a
+macOS driver. Run the Rust desktop status UI with:
 
 ```sh
 ./run-mac-ui.sh
@@ -80,23 +84,46 @@ macOS already includes native Magic Trackpad support. This repo does not install
 
 ### Linux
 
-Linux support is not implemented yet. This Windows driver cannot run on Linux because it uses KMDF/UMDF/WDF. Running the Linux helper is safe:
+Linux driver support is not implemented yet. This command only detects Linux and
+exits safely:
 
 ```sh
 ./install.sh
 ```
 
-It detects Linux and exits without changing the system.
+## Downloadable Builds
 
-## Rust workspace
+This repo can produce user-downloadable files through GitHub Actions:
 
-Run all Rust tests:
+| Artifact | Contents | Platform |
+|---|---|---|
+| `MagicTrackpadRs-windows-tools.zip` | `MagicTrackpadRs.exe`, `mt2-control.exe`, docs | Windows |
+| `MagicTrackpadRs-macos.tar.gz` | `MagicTrackpadRs-mac`, launcher script, docs | macOS |
+| `MagicTrackpadRs-linux-helper.tar.gz` | Linux helper CLI/scripts and docs | Linux |
+
+Open the **Actions** tab on GitHub and run **Build Rust Tool Artifacts**. Tagged
+releases named `v*` also trigger artifact builds.
+
+The Windows driver package is separate from these Rust UI/tool artifacts and
+still requires Windows driver signing.
+
+## Build and Test
+
+### Rust
+
+Install Rust with `rustup`, then run:
 
 ```sh
 cargo test
 ```
 
-Run the macOS desktop UI:
+Build the Rust tools:
+
+```sh
+cargo build --workspace
+```
+
+Run the macOS UI:
 
 ```sh
 ./run-mac-ui.sh
@@ -108,15 +135,47 @@ Run the Windows desktop UI from Administrator PowerShell:
 cargo run -p mt2-win-ui
 ```
 
-Run the Windows CLI settings tool:
+Run the Windows CLI:
 
 ```powershell
 cargo run -p mt2-control -- help
 ```
 
-## Credits
+### Windows Driver Package
 
-- [This excellent PR](https://github.com/imbushuo/mac-precision-touchpad/pull/533) of [1Revenger1](https://github.com/1Revenger1) to the imbushuo repo, which fixes the "near field fingers" problem, cleans up the code, and removes the QueryPerformanceCounter call in the interrupt function.
-- The haptic feedback control messages sent by the driver to the MT2 in this project are based on the excellent reverse engineering work of [dos1](https://github.com/dos1) ([here](https://github.com/mwyborski/Linux-Magic-Trackpad-2-Driver/issues/28#issuecomment-451625504)).
-- My long-time friends at [Landlogic IT](https://landlogic.it/), who took care of the grueling process of gaining access to Microsoft's Hardware Dashboard and who take care of signing the driver packages for me.
-- Community contributors who helped fund driver-signing work.
+Building the driver package requires Visual Studio, WDK, SDK, NuGet package
+restore, signing certificates, and Windows driver packaging tools.
+
+From a suitable Windows developer prompt:
+
+```bat
+cd build
+make.bat
+```
+
+The driver package still needs proper signing before normal Windows installation.
+
+## Repo Layout
+
+```text
+MagicTrackpadUsbDriver/     Windows USB UMDF driver source
+MagicTrackpadHidFilter/     Windows HID filter driver source
+rust/                       Rust parser, settings, and UI crates
+build/                      Windows INF and packaging scripts
+install.ps1                 Windows install helper
+install.sh                  Linux/macOS safe detector
+run-mac-ui.sh               macOS Rust UI launcher
+```
+
+## Rust Port Direction
+
+The safe path is staged:
+
+1. Keep the current Windows C driver building.
+2. Move pure report parsing and settings logic into Rust.
+3. Add tests against captured Magic Trackpad reports.
+4. Expose Rust logic to the driver through a small C ABI only after behavior
+   matches.
+5. Build a separate Rust Linux HID/input implementation later.
+
+See [RUST_PORT.md](RUST_PORT.md).
