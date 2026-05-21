@@ -1,0 +1,13 @@
+[package]
+name = "mt2-core"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0-or-later"
+description = "Magic Trackpad 2 report parsing core"
+
+[lib]
+crate-type = ["rlib"]
+
+[features]
+default = ["std"]
+std = []

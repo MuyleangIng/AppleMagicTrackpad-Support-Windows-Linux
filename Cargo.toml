@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "rust/mt2-core",
+    "rust/mt2-settings",
+    "rust/mt2-control",
+    "rust/mt2-mac-ui",
+    "rust/mt2-win-ui",
+]
+resolver = "2"

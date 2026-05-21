@@ -1,0 +1,9 @@
+[package]
+name = "mt2-control"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0-or-later"
+description = "Rust control utility for Magic Trackpad 2 settings"
+
+[dependencies]
+mt2-settings = { path = "../mt2-settings" }

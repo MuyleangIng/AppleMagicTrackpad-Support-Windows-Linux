@@ -1,0 +1,8 @@
+[package]
+name = "mt2-settings"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0-or-later"
+description = "Shared Magic Trackpad 2 settings backend"
+
+[dependencies]

@@ -1,0 +1,9 @@
+.vs/
+bin/
+obj/
+MagicTrackpadUsbDriver/build/
+MagicTrackpadHidFilter/build/
+intermediate/
+build/result/
+/packages
+target/
