@@ -1,4 +1,4 @@
-# Magic-Tranpad-mac-OS-win-linux
+# AppleMagicTrackpad-Support-Windows-Linux
 
 Rust-first Apple Magic Trackpad tools for macOS, Windows, and future Linux support.
 
